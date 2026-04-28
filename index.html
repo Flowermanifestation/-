@@ -1,0 +1,1414 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 灵境显化 - Manifestation App</title>
+    <style>
+        :root {
+            --bg-deep: #0a0a14;
+            --bg-card: #13132b;
+            --bg-card-hover: #1a1a3a;
+            --gold: #d4a853;
+            --gold-light: #f0d78c;
+            --purple: #7b5ea7;
+            --purple-light: #a78cc4;
+            --lavender: #c4b5e0;
+            --text: #e8e0f0;
+            --text-dim: #9a8ab8;
+            --accent-pink: #e087a0;
+            --accent-teal: #5fb9b0;
+            --danger: #e05570;
+            --success: #6dbf8a;
+            --star: #fffbe6;
+            --border: rgba(180, 160, 210, 0.2);
+            --glow-purple: rgba(130, 100, 180, 0.5);
+            --glow-gold: rgba(220, 170, 80, 0.4);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+            --radius-xl: 28px;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+            --font-display: 'Georgia', 'Times New Roman', serif;
+            --font-body: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+            --nav-height: 72px;
+            --header-height: 56px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: #0d0d1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 30% 20%, rgba(130, 90, 180, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 60%, rgba(200, 150, 70, 0.1) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 80%, rgba(100, 140, 180, 0.08) 0%, transparent 50%);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Stars background */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+            30% {
+                opacity: 0.9;
+                transform: scale(1.6);
+            }
+            60% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
+
+        /* Phone frame */
+        .phone-frame {
+            position: relative;
+            z-index: 1;
+            width: 400px;
+            height: 860px;
+            background: var(--bg-deep);
+            border-radius: 44px;
+            overflow: hidden;
+            box-shadow:
+                var(--shadow-lg),
+                0 0 0 3px #1a1a35,
+                0 0 0 6px #111122,
+                0 0 0 8px rgba(180, 150, 210, 0.3),
+                0 0 80px rgba(140, 100, 200, 0.25);
+            display: flex;
+            flex-direction: column;
+        }
+        @media (max-width: 440px) {
+            .phone-frame {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
+
+        /* Status bar */
+        .status-bar {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            background: rgba(10, 10, 20, 0.95);
+            z-index: 10;
+        }
+        .status-icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-size: 11px;
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 10px 18px 18px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .main-content::-webkit-scrollbar {
+            width: 3px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background: rgba(180, 150, 210, 0.3);
+            border-radius: 10px;
+        }
+
+        /* Page panels */
+        .page {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeSlideIn 0.35s ease;
+        }
+        .page.active {
+            display: flex;
+        }
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .app-header .greeting {
+            font-family: var(--font-display);
+            font-size: 22px;
+            color: var(--text);
+            letter-spacing: 1px;
+        }
+        .app-header .greeting span {
+            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        .header-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+            color: var(--text-dim);
+        }
+        .header-icon-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(200, 160, 100, 0.4);
+            box-shadow: 0 0 20px var(--glow-gold);
+            color: var(--gold-light);
+        }
+
+        /* Energy orb */
+        .energy-orb-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .energy-orb {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 35%, rgba(240, 210, 140, 0.6) 0%, rgba(160, 100, 200, 0.5) 30%, rgba(60, 30, 90, 0.7) 60%, rgba(20, 10, 40, 0.9) 100%);
+            box-shadow:
+                0 0 60px var(--glow-purple),
+                0 0 100px rgba(180, 130, 60, 0.3),
+                inset 0 0 40px rgba(200, 160, 220, 0.25);
+            animation: orbPulse 3s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.3s;
+            position: relative;
+        }
+        .energy-orb:active {
+            transform: scale(0.94);
+        }
+        .energy-orb .orb-value {
+            font-family: var(--font-display);
+            font-size: 36px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255, 220, 150, 0.8);
+            letter-spacing: 2px;
+        }
+        .energy-orb .orb-label {
+            font-size: 11px;
+            color: var(--lavender);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        @keyframes orbPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 60px var(--glow-purple), 0 0 100px rgba(180, 130, 60, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 90px rgba(180, 120, 200, 0.7), 0 0 140px rgba(200, 150, 70, 0.5);
+            }
+        }
+        .orb-ring {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 2px dashed rgba(200, 160, 220, 0.4);
+            animation: ringSpin 20s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes ringSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 18px 16px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .card:hover {
+            border-color: rgba(180, 150, 210, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(150, 110, 190, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 16px;
+            color: var(--text);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 1;
+            line-height: 1.5;
+        }
+
+        /* Angel number card */
+        .angel-number-display {
+            font-family: var(--font-display);
+            font-size: 48px;
+            text-align: center;
+            color: #fff;
+            letter-spacing: 8px;
+            text-shadow: 0 0 40px rgba(255, 200, 100, 0.7);
+            animation: numberGlow 2s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes numberGlow {
+            0%,
+            100% {
+                text-shadow: 0 0 40px rgba(255, 200, 100, 0.7);
+            }
+            50% {
+                text-shadow: 0 0 70px rgba(255, 220, 140, 1), 0 0 120px rgba(200, 150, 80, 0.6);
+            }
+        }
+        .angel-meaning {
+            text-align: center;
+            font-size: 13px;
+            color: var(--lavender);
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* Affirmation */
+        .affirmation-box {
+            background: linear-gradient(135deg, rgba(120, 80, 160, 0.3), rgba(60, 30, 100, 0.3));
+            border-radius: var(--radius-lg);
+            padding: 22px 18px;
+            text-align: center;
+            border: 1px solid rgba(180, 140, 200, 0.3);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        .affirmation-box:hover {
+            border-color: rgba(200, 160, 100, 0.5);
+            box-shadow: 0 0 40px rgba(160, 100, 200, 0.3);
+        }
+        .affirmation-text {
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: #fff;
+            letter-spacing: 2px;
+            line-height: 1.6;
+            font-style: italic;
+        }
+        .affirmation-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        /* Oracle card */
+        .oracle-card {
+            background: linear-gradient(180deg, #1a1050, #0d0828);
+            border-radius: var(--radius-xl);
+            padding: 28px 20px;
+            text-align: center;
+            border: 2px solid rgba(180, 150, 210, 0.4);
+            cursor: pointer;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .oracle-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 50px rgba(100, 60, 160, 0.5);
+            border-color: rgba(220, 180, 100, 0.6);
+        }
+        .oracle-card .oracle-icon {
+            font-size: 60px;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+        .oracle-card .oracle-name {
+            font-family: var(--font-display);
+            font-size: 20px;
+            color: #fff;
+            letter-spacing: 2px;
+            margin-top: 8px;
+        }
+        .oracle-card .oracle-desc {
+            font-size: 12px;
+            color: var(--lavender);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+        .oracle-card .tap-hint {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            margin-top: 12px;
+            opacity: 0.7;
+        }
+
+        /* Gratitude journal */
+        .gratitude-input-area {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .gratitude-input-area input {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            padding: 12px 18px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            font-family: var(--font-body);
+        }
+        .gratitude-input-area input:focus {
+            border-color: var(--purple-light);
+            box-shadow: 0 0 20px rgba(150, 100, 200, 0.3);
+        }
+        .gratitude-input-area input::placeholder {
+            color: var(--text-dim);
+            opacity: 0.6;
+        }
+        .btn-send {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), #5a3d8a);
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-send:hover {
+            box-shadow: 0 0 25px var(--glow-purple);
+            transform: scale(1.05);
+        }
+        .gratitude-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .gratitude-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text);
+            border: 1px solid var(--border);
+            animation: fadeSlideIn 0.3s ease;
+            transition: all 0.2s;
+        }
+        .gratitude-item .heart-icon {
+            color: var(--accent-pink);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .gratitude-item .delete-btn {
+            margin-left: auto;
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 14px;
+            opacity: 0.5;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        .gratitude-item .delete-btn:hover {
+            opacity: 1;
+            color: var(--danger);
+            background: rgba(220, 80, 100, 0.15);
+        }
+
+        /* Meditation timer */
+        .meditation-circle {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid rgba(180, 150, 210, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.5s;
+            margin: 0 auto;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .meditation-circle.active {
+            border-color: var(--gold-light);
+            box-shadow: 0 0 60px var(--glow-gold);
+            animation: meditatePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes meditatePulse {
+            0%,
+            100% {
+                box-shadow: 0 0 60px var(--glow-gold);
+            }
+            50% {
+                box-shadow: 0 0 100px rgba(240, 200, 100, 0.7), 0 0 160px rgba(200, 150, 70, 0.4);
+            }
+        }
+        .meditation-time {
+            font-family: var(--font-display);
+            font-size: 38px;
+            color: #fff;
+            letter-spacing: 3px;
+        }
+        .meditation-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .meditation-presets {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .preset-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            font-family: var(--font-body);
+        }
+        .preset-btn:hover,
+        .preset-btn.active-preset {
+            background: rgba(150, 100, 200, 0.3);
+            border-color: var(--purple-light);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(150, 100, 200, 0.3);
+        }
+
+        /* Vision board */
+        .vision-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .vision-cell {
+            aspect-ratio: 1;
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 36px;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-dim);
+            flex-direction: column;
+            gap: 4px;
+        }
+        .vision-cell:hover {
+            border-color: var(--gold-light);
+            box-shadow: 0 0 30px rgba(200, 150, 70, 0.3);
+            color: var(--gold-light);
+        }
+        .vision-cell.filled {
+            border-style: solid;
+            border-color: rgba(180, 150, 210, 0.5);
+            background: linear-gradient(135deg, rgba(100, 60, 150, 0.4), rgba(40, 20, 80, 0.5));
+            font-size: 14px;
+            color: #fff;
+            letter-spacing: 1px;
+            text-align: center;
+            padding: 8px;
+        }
+        .vision-cell .cell-emoji {
+            font-size: 40px;
+        }
+        .vision-cell .cell-label {
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            height: var(--nav-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: rgba(13, 13, 28, 0.95);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding-bottom: 4px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 10px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            padding: 6px 10px;
+            border-radius: 16px;
+            position: relative;
+            background: none;
+            border: none;
+            font-family: var(--font-body);
+        }
+        .nav-item .nav-icon {
+            font-size: 22px;
+            transition: all 0.3s;
+        }
+        .nav-item.active {
+            color: var(--gold-light);
+        }
+        .nav-item.active .nav-icon {
+            text-shadow: 0 0 20px var(--glow-gold);
+            transform: scale(1.1);
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            width: 24px;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 0 12px var(--glow-gold);
+        }
+        .nav-badge {
+            position: absolute;
+            top: -2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-pink);
+            box-shadow: 0 0 8px rgba(224, 130, 160, 0.8);
+        }
+
+        /* Toast */
+        .toast {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 20, 50, 0.95);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.4s;
+            border: 1px solid rgba(200, 160, 100, 0.5);
+            white-space: nowrap;
+        }
+        .toast.show {
+            opacity: 1;
+            top: 75px;
+        }
+
+        /* Modal overlay */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            border-radius: 44px;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 28px 20px;
+            text-align: center;
+            border: 1px solid var(--border);
+            width: 85%;
+            max-width: 320px;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-content h3 {
+            font-family: var(--font-display);
+            color: #fff;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .modal-content p {
+            color: var(--lavender);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .modal-close {
+            margin-top: 16px;
+            padding: 10px 28px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--purple), #5a3d8a);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            letter-spacing: 2px;
+            font-size: 13px;
+            transition: all 0.3s;
+            font-family: var(--font-body);
+        }
+        .modal-close:hover {
+            box-shadow: 0 0 30px var(--glow-purple);
+        }
+
+        /* Ripple */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+        }
+        @keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* pulse dot */
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gold-light);
+            box-shadow: 0 0 10px var(--glow-gold);
+            animation: dotPulse 1.5s ease-in-out infinite;
+            margin-right: 6px;
+        }
+        @keyframes dotPulse {
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Stars -->
+    <div class="stars-container" id="starsContainer"></div>
+
+    <!-- Phone -->
+    <div class="phone-frame" id="phoneFrame">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+                <span class="status-dot"></span>
+                <span>📶</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+
+            <!-- PAGE 0: 首页 Home -->
+            <div class="page active" id="page-home">
+                <div class="app-header">
+                    <div class="greeting">✨ <span>灵境显化</span></div>
+                    <div class="header-icon-btn" onclick="refreshEnergy()" title="刷新能量">🔄</div>
+                </div>
+                <div class="energy-orb-container">
+                    <div class="orb-ring"></div>
+                    <div class="energy-orb" id="energyOrb" onclick="refreshEnergy()">
+                        <div class="orb-value" id="orbValue">777</div>
+                        <div class="orb-label">能量频率</div>
+                    </div>
+                </div>
+                <div style="text-align:center;font-size:11px;color:var(--text-dim);letter-spacing:2px;">
+                    <span class="pulse-dot"></span>宇宙信号已对齐
+                </div>
+                <div class="angel-number-display" id="angelNumber">11:11</div>
+                <div class="angel-meaning" id="angelMeaning">天使在你身边，保持正念</div>
+                <div class="affirmation-box" id="affirmationBox" onclick="newAffirmation()">
+                    <div class="affirmation-label">✦ 今日肯定语 ✦</div>
+                    <div class="affirmation-text" id="affirmationText">我值得拥有宇宙赐予的一切美好</div>
+                </div>
+                <div class="card" onclick="switchPage('oracle')">
+                    <div class="card-title">🔮 今日神谕</div>
+                    <div class="card-subtitle">点击抽取你的每日指引卡片</div>
+                </div>
+            </div>
+
+            <!-- PAGE 1: 显化工坊 Manifest -->
+            <div class="page" id="page-manifest">
+                <div class="app-header">
+                    <div class="greeting">🎯 <span>显化工坊</span></div>
+                    <div class="header-icon-btn" onclick="addVisionCell()">➕</div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="card-title">🌟 愿景板 Vision Board</div>
+                    <div class="card-subtitle">将你的梦想可视化，宇宙会回应你的频率</div>
+                </div>
+                <div class="vision-grid" id="visionGrid">
+                    <div class="vision-cell" onclick="editVisionCell(this)"><span class="cell-emoji">💖</span><span class="cell-label">爱与被爱</span></div>
+                    <div class="vision-cell" onclick="editVisionCell(this)"><span class="cell-emoji">💰</span><span class="cell-label">财富丰盛</span></div>
+                    <div class="vision-cell" onclick="editVisionCell(this)"><span class="cell-emoji">🏠</span><span class="cell-label">理想家园</span></div>
+                    <div class="vision-cell" onclick="editVisionCell(this)"><span class="cell-emoji">✨</span><span class="cell-label">添加愿景</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📝 显化清单</div>
+                    <div class="card-subtitle">写下你的目标，用现在时态描述，仿佛已经实现</div>
+                    <div class="gratitude-input-area" style="margin-top:10px;">
+                        <input type="text" id="manifestInput" placeholder="例如：我感恩已经拥有了...">
+                        <button class="btn-send" onclick="addManifestItem()">✧</button>
+                    </div>
+                    <div class="gratitude-list" id="manifestList"></div>
+                </div>
+            </div>
+
+            <!-- PAGE 2: 神谕卡 Oracle -->
+            <div class="page" id="page-oracle">
+                <div class="app-header">
+                    <div class="greeting">🔮 <span>神谕指引</span></div>
+                </div>
+                <div class="oracle-card" id="oracleCard" onclick="drawOracleCard()">
+                    <div class="oracle-icon" id="oracleIcon">🌙</div>
+                    <div class="oracle-name" id="oracleName">点击抽牌</div>
+                    <div class="oracle-desc" id="oracleDesc">宇宙想要给你一条信息</div>
+                    <div class="tap-hint">轻触屏幕抽取神谕卡</div>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="card-title" id="oracleTitle">✨ 宇宙指引</div>
+                    <div class="card-subtitle" id="oracleGuidance">深呼吸，放松身心，然后抽取你的神谕卡。每一张卡都携带独特的能量频率。</div>
+                </div>
+            </div>
+
+            <!-- PAGE 3: 感恩日记 Gratitude -->
+            <div class="page" id="page-gratitude">
+                <div class="app-header">
+                    <div class="greeting">🙏 <span>感恩日记</span></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">💫 今日感恩</div>
+                    <div class="card-subtitle">感恩是最高的振动频率，感恩越多，显化越快</div>
+                    <div class="gratitude-input-area" style="margin-top:10px;">
+                        <input type="text" id="gratitudeInput" placeholder="我感恩...">
+                        <button class="btn-send" onclick="addGratitude()">♥</button>
+                    </div>
+                    <div class="gratitude-list" id="gratitudeList"></div>
+                </div>
+            </div>
+
+            <!-- PAGE 4: 冥想 Meditation -->
+            <div class="page" id="page-meditation">
+                <div class="app-header">
+                    <div class="greeting">🧘 <span>冥想空间</span></div>
+                </div>
+                <div class="meditation-circle" id="meditationCircle" onclick="toggleMeditation()">
+                    <div class="meditation-time" id="meditationTime">05:00</div>
+                    <div class="meditation-label">分钟</div>
+                </div>
+                <div class="meditation-presets">
+                    <button class="preset-btn active-preset" onclick="setMeditationPreset(5, this)">5 分钟</button>
+                    <button class="preset-btn" onclick="setMeditationPreset(10, this)">10 分钟</button>
+                    <button class="preset-btn" onclick="setMeditationPreset(15, this)">15 分钟</button>
+                    <button class="preset-btn" onclick="setMeditationPreset(20, this)">20 分钟</button>
+                </div>
+                <div class="card" style="text-align:center;">
+                    <div class="card-title">🌿 引导冥想</div>
+                    <div class="card-subtitle">闭眼，深呼吸，感受宇宙能量流经你的身体。每一次呼吸都是一次显化的机会。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+            <button class="nav-item active" data-page="home" onclick="switchPage('home')">
+                <span class="nav-icon">🏠</span>首页
+            </button>
+            <button class="nav-item" data-page="manifest" onclick="switchPage('manifest')">
+                <span class="nav-icon">🎯</span>显化
+            </button>
+            <button class="nav-item" data-page="oracle" onclick="switchPage('oracle')">
+                <span class="nav-icon">🔮</span>神谕
+                <span class="nav-badge"></span>
+            </button>
+            <button class="nav-item" data-page="gratitude" onclick="switchPage('gratitude')">
+                <span class="nav-icon">🙏</span>感恩
+            </button>
+            <button class="nav-item" data-page="meditation" onclick="switchPage('meditation')">
+                <span class="nav-icon">🧘</span>冥想
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <h3 id="modalTitle">✨</h3>
+                <p id="modalText"></p>
+                <button class="modal-close" onclick="closeModal()">关 闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ STARS BACKGROUND ============
+        const starsContainer = document.getElementById('starsContainer');
+        for (let i = 0; i < 80; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            const size = Math.random() * 2.5 + 1;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            star.style.setProperty('--dur', (Math.random() * 3 + 2) + 's');
+            star.style.setProperty('--delay', Math.random() * 6 + 's');
+            starsContainer.appendChild(star);
+        }
+
+        // ============ STATE ============
+        const state = {
+            currentPage: 'home',
+            energy: 777,
+            angelNumbers: ['11:11', '22:22', '3:33', '4:44', '5:55', '12:34', '777', '888', '999', '000'],
+            angelMeanings: [
+                '天使在你身边，保持正念',
+                '宇宙正在为你铺路，相信过程',
+                '扬升大师与你同在，勇敢前行',
+                '守护天使围绕着你，你是安全的',
+                '重大的转变即将到来，拥抱变化',
+                '你走在正确的道路上，继续前进',
+                '幸运与丰盛正在向你涌来',
+                '财富之门即将打开，保持感恩',
+                '一个周期即将完成，新的开始临近',
+                '无限的可能性在你面前展开'
+            ],
+            affirmations: [
+                '我值得拥有宇宙赐予的一切美好',
+                '我是丰盛的磁铁，财富自然流向我',
+                '每一天我都在成为更好的自己',
+                '宇宙以最好的方式回应我的愿望',
+                '我释放所有限制，拥抱无限可能',
+                '爱包围着我，我就是爱的化身',
+                '我的梦想正在以完美的方式显化',
+                '我信任宇宙的时机，一切都是最好的安排',
+                '感恩填满我的心，吸引更多美好',
+                '我是创造者，我创造自己的现实'
+            ],
+            oracleCards: [
+                { icon: '🌟', name: '新开始', desc: '一个崭新的篇章正在开启', guidance: '放下过去，勇敢迈出第一步。宇宙在支持你的每一个决定。' },
+                { icon: '🌊', name: '流动', desc: '让能量自然流动，不要抗拒', guidance: '顺应生命的河流，有时候放手比紧抓更有力量。信任宇宙的流动。' },
+                { icon: '🔥', name: '激情', desc: '你内心的火焰正在燃烧', guidance: '追随你的热情，它会引领你走向命定的道路。不要让你的火焰熄灭。' },
+                { icon: '🕊️', name: '和平', desc: '内心的平静是最强大的力量', guidance: '在喧嚣中找到宁静，你的平静会感染周围的一切。冥想帮助你连接内在智慧。' },
+                { icon: '🌈', name: '希望', desc: '暴风雨后总会有彩虹', guidance: '保持希望，即使在最黑暗的时刻。光明即将到来，你的坚持会被看见。' },
+                { icon: '💎', name: '内在智慧', desc: '你拥有所有需要的答案', guidance: '转向内心，你比想象中更有智慧。直觉是你最可靠的导航系统。' },
+                { icon: '🌻', name: '丰盛', desc: '丰盛正在向你涌来', guidance: '打开你的心去接受。丰盛不仅仅是金钱，还有爱、健康和喜悦。' },
+                { icon: '🦋', name: '蜕变', desc: '你正在经历美丽的转变', guidance: '蜕变可能伴随着不适，但结果值得期待。相信这个过程。' },
+            ],
+            gratitudeItems: [],
+            manifestItems: [],
+            meditationSeconds: 300,
+            meditationActive: false,
+            meditationInterval: null,
+            visionCells: [],
+        };
+
+        // Load from localStorage
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('manifestAppState');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state.gratitudeItems = parsed.gratitudeItems || [];
+                    state.manifestItems = parsed.manifestItems || [];
+                    state.meditationSeconds = parsed.meditationSeconds || 300;
+                    state.energy = parsed.energy || 777;
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('manifestAppState', JSON.stringify({
+                    gratitudeItems: state.gratitudeItems,
+                    manifestItems: state.manifestItems,
+                    meditationSeconds: state.meditationSeconds,
+                    energy: state.energy,
+                }));
+            } catch (e) { /* ignore */ }
+        }
+
+        loadState();
+
+        // ============ TOAST ============
+        let toastTimer;
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        // ============ RIPPLE EFFECT ============
+        function addRipple(e, element) {
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            element.style.position = element.style.position || 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove());
+        }
+
+        // ============ PAGE SWITCHING ============
+        function switchPage(pageName) {
+            if (state.currentPage === pageName && pageName !== 'oracle') return;
+            state.currentPage = pageName;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const targetPage = document.getElementById('page-' + pageName);
+            if (targetPage) targetPage.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const navBtn = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+            if (navBtn) navBtn.classList.add('active');
+            document.getElementById('mainContent').scrollTop = 0;
+            // Hide oracle badge
+            const badge = document.querySelector('.nav-item[data-page="oracle"] .nav-badge');
+            if (badge && pageName === 'oracle') badge.style.display = 'none';
+            if (pageName === 'meditation') updateMeditationDisplay();
+            if (pageName === 'gratitude') renderGratitudeList();
+            if (pageName === 'manifest') renderManifestList();
+        }
+
+        // ============ ENERGY ORB ============
+        function refreshEnergy() {
+            const orb = document.getElementById('energyOrb');
+            orb.style.transform = 'scale(1.08)';
+            setTimeout(() => orb.style.transform = 'scale(1)', 200);
+            state.energy = Math.floor(Math.random() * 400) + 600;
+            document.getElementById('orbValue').textContent = state.energy;
+            const idx = Math.floor(Math.random() * state.angelNumbers.length);
+            document.getElementById('angelNumber').textContent = state.angelNumbers[idx];
+            document.getElementById('angelMeaning').textContent = state.angelMeanings[idx];
+            showToast('✨ 能量已刷新');
+            saveState();
+        }
+
+        // ============ AFFIRMATION ============
+        function newAffirmation() {
+            const box = document.getElementById('affirmationBox');
+            const text = document.getElementById('affirmationText');
+            let newAff;
+            do {
+                newAff = state.affirmations[Math.floor(Math.random() * state.affirmations.length)];
+            } while (newAff === text.textContent && state.affirmations.length > 1);
+            text.textContent = newAff;
+            box.style.transform = 'scale(1.03)';
+            setTimeout(() => box.style.transform = 'scale(1)', 200);
+            showToast('💫 新的肯定语');
+        }
+
+        // ============ ORACLE CARD ============
+        function drawOracleCard() {
+            const card = document.getElementById('oracleCard');
+            const icon = document.getElementById('oracleIcon');
+            const name = document.getElementById('oracleName');
+            const desc = document.getElementById('oracleDesc');
+            const title = document.getElementById('oracleTitle');
+            const guidance = document.getElementById('oracleGuidance');
+            const randomCard = state.oracleCards[Math.floor(Math.random() * state.oracleCards.length)];
+            card.style.transform = 'rotateY(180deg)';
+            card.style.transition = 'transform 0.6s ease';
+            setTimeout(() => {
+                icon.textContent = randomCard.icon;
+                name.textContent = randomCard.name;
+                desc.textContent = randomCard.desc;
+                title.textContent = '✨ ' + randomCard.name;
+                guidance.textContent = randomCard.guidance;
+                card.style.transform = 'rotateY(0deg)';
+                showToast('🔮 ' + randomCard.name + ' - ' + randomCard.desc);
+            }, 350);
+            // Hide badge
+            const badge = document.querySelector('.nav-item[data-page="oracle"] .nav-badge');
+            if (badge) badge.style.display = 'none';
+        }
+
+        // ============ GRATITUDE ============
+        function addGratitude() {
+            const input = document.getElementById('gratitudeInput');
+            const text = input.value.trim();
+            if (!text) { showToast('请输入感恩内容 💝'); return; }
+            state.gratitudeItems.unshift({ text, time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit',
+                    minute: '2-digit' }), id: Date.now() });
+            input.value = '';
+            renderGratitudeList();
+            saveState();
+            showToast('🙏 感恩已记录');
+        }
+
+        function removeGratitude(id) {
+            state.gratitudeItems = state.gratitudeItems.filter(item => item.id !== id);
+            renderGratitudeList();
+            saveState();
+        }
+
+        function renderGratitudeList() {
+            const list = document.getElementById('gratitudeList');
+            list.innerHTML = state.gratitudeItems.length === 0 ?
+                '<div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px;letter-spacing:1px;">写下你的第一份感恩吧 💝</div>' :
+                state.gratitudeItems.map(item => `
+                <div class="gratitude-item">
+                    <span class="heart-icon">💖</span>
+                    <span>${escapeHTML(item.text)}</span>
+                    <span style="font-size:10px;color:var(--text-dim);margin-left:auto;margin-right:6px;">${item.time}</span>
+                    <button class="delete-btn" onclick="event.stopPropagation();removeGratitude(${item.id})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        // ============ MANIFEST ============
+        function addManifestItem() {
+            const input = document.getElementById('manifestInput');
+            const text = input.value.trim();
+            if (!text) { showToast('请输入显化目标 🎯'); return; }
+            state.manifestItems.unshift({ text, id: Date.now(), time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit',
+                    minute: '2-digit' }) });
+            input.value = '';
+            renderManifestList();
+            saveState();
+            showToast('🎯 目标已设定，宇宙正在运作');
+        }
+
+        function removeManifestItem(id) {
+            state.manifestItems = state.manifestItems.filter(item => item.id !== id);
+            renderManifestList();
+            saveState();
+        }
+
+        function renderManifestList() {
+            const list = document.getElementById('manifestList');
+            list.innerHTML = state.manifestItems.length === 0 ?
+                '<div style="color:var(--text-dim);font-size:12px;text-align:center;padding:20px;letter-spacing:1px;">用现在时态写下你的显化目标 ✨</div>' :
+                state.manifestItems.map(item => `
+                <div class="gratitude-item">
+                    <span class="heart-icon">✨</span>
+                    <span>${escapeHTML(item.text)}</span>
+                    <span style="font-size:10px;color:var(--text-dim);margin-left:auto;margin-right:6px;">${item.time}</span>
+                    <button class="delete-btn" onclick="event.stopPropagation();removeManifestItem(${item.id})">✕</button>
+                </div>
+            `).join('');
+        }
+
+        // ============ VISION BOARD ============
+        function editVisionCell(cell) {
+            const currentText = cell.classList.contains('filled') ? cell.textContent.trim() : '';
+            const newText = prompt('输入你的愿景（用现在时态描述）：', currentText);
+            if (newText !== null) {
+                const trimmed = newText.trim();
+                if (trimmed) {
+                    cell.classList.add('filled');
+                    cell.innerHTML = trimmed;
+                    cell.style.fontSize = '13px';
+                } else {
+                    cell.classList.remove('filled');
+                    cell.innerHTML =
+                        '<span class="cell-emoji">✨</span><span class="cell-label">添加愿景</span>';
+                    cell.style.fontSize = '';
+                }
+                showToast('🌟 愿景已更新');
+            }
+        }
+
+        function addVisionCell() {
+            const grid = document.getElementById('visionGrid');
+            const newCell = document.createElement('div');
+            newCell.className = 'vision-cell';
+            newCell.innerHTML = '<span class="cell-emoji">✨</span><span class="cell-label">添加愿景</span>';
+            newCell.onclick = function() { editVisionCell(this); };
+            grid.appendChild(newCell);
+            showToast('➕ 新愿景格已添加');
+        }
+
+        // ============ MEDITATION ============
+        function updateMeditationDisplay() {
+            const mins = Math.floor(state.meditationSeconds / 60);
+            const secs = state.meditationSeconds % 60;
+            document.getElementById('meditationTime').textContent =
+                String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+
+        function setMeditationPreset(minutes, btn) {
+            if (state.meditationActive) {
+                showToast('请先停止当前冥想');
+                return;
+            }
+            state.meditationSeconds = minutes * 60;
+            updateMeditationDisplay();
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active-preset'));
+            btn.classList.add('active-preset');
+            saveState();
+            showToast('⏱ 冥想时长设为 ' + minutes + ' 分钟');
+        }
+
+        function toggleMeditation() {
+            const circle = document.getElementById('meditationCircle');
+            if (state.meditationActive) {
+                stopMeditation();
+                circle.classList.remove('active');
+                showToast('冥想已结束 🧘');
+            } else {
+                startMeditation();
+                circle.classList.add('active');
+                showToast('🌿 冥想开始，深呼吸...');
+            }
+        }
+
+        function startMeditation() {
+            state.meditationActive = true;
+            state.meditationInterval = setInterval(() => {
+                if (state.meditationSeconds > 0) {
+                    state.meditationSeconds--;
+                    updateMeditationDisplay();
+                    saveState();
+                } else {
+                    stopMeditation();
+                    document.getElementById('meditationCircle').classList.remove('active');
+                    showToast('🔔 冥想完成！感受内在的平静');
+                    // Reset
+                    state.meditationSeconds = 300;
+                    updateMeditationDisplay();
+                    saveState();
+                }
+            }, 1000);
+        }
+
+        function stopMeditation() {
+            state.meditationActive = false;
+            clearInterval(state.meditationInterval);
+            state.meditationInterval = null;
+            updateMeditationDisplay();
+            saveState();
+        }
+
+        // ============ MODAL ============
+        function showModal(title, text) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        // ============ UTILS ============
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ============ INIT ============
+        function init() {
+            document.getElementById('orbValue').textContent = state.energy;
+            const idx = Math.floor(Math.random() * state.angelNumbers.length);
+            document.getElementById('angelNumber').textContent = state.angelNumbers[idx];
+            document.getElementById('angelMeaning').textContent = state.angelMeanings[idx];
+            updateMeditationDisplay();
+            renderGratitudeList();
+            renderManifestList();
+            // Set active preset
+            const presetMins = Math.floor(state.meditationSeconds / 60);
+            document.querySelectorAll('.preset-btn').forEach(b => {
+                b.classList.remove('active-preset');
+                if (parseInt(b.textContent) === presetMins) b.classList.add('active-preset');
+            });
+        }
+
+        // Keyboard shortcut for meditation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && state.currentPage === 'meditation') {
+                e.preventDefault();
+                toggleMeditation();
+            }
+        });
+
+        // Handle phone frame clicks for ripple
+        document.getElementById('phoneFrame').addEventListener('click', function(e) {
+            const target = e.target.closest('.card, .affirmation-box, .oracle-card, .vision-cell, .btn-send, .header-icon-btn, .preset-btn');
+            if (target) {
+                addRipple(e, target);
+            }
+        });
+
+        init();
+        console.log('✨ 灵境显化 App 已就绪');
+        console.log('🔮 五大功能模块：首页 | 显化工坊 | 神谕卡 | 感恩日记 | 冥想空间');
+        console.log('💡 提示：点击能量球刷新频率 | 点击肯定语更换 | 点击神谕卡抽牌');
+        console.log('⌨️ 冥想页面按空格键开始/停止冥想');
+    </script>
+</body>
+</html>
+```
